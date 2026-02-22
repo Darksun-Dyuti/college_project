@@ -209,6 +209,65 @@
       <textarea id="existingCondition" placeholder="Diabetes, BP, Asthma..."></textarea>
     </div>
 
+    <!-- New Fields Section -->
+    <hr style="border: 1px solid #264e6d; margin: 1.5rem 0;">
+    <h3 style="color: #4fa3ff; margin: 1rem 0; text-align: center;">Additional Health & Lifestyle Information</h3>
+
+    <div class="field">
+      <label>Income Level</label>
+      <select id="income">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+        <option value="very_high">Very High</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Employment Status</label>
+      <select id="employment">
+        <option value="employed" selected>Employed</option>
+        <option value="self_employed">Self-Employed</option>
+        <option value="unemployed">Unemployed</option>
+        <option value="retired">Retired</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Health Score (1-10)</label>
+      <input type="number" id="healthScore" min="1" max="10" value="7">
+    </div>
+
+    <div class="field">
+      <label>Exercise Frequency (days per week, 0-7)</label>
+      <input type="number" id="exerciseFrequency" min="0" max="7" value="3">
+    </div>
+
+    <div class="field">
+      <label>Education Level</label>
+      <select id="education">
+        <option value="high_school">High School</option>
+        <option value="bachelor" selected>Bachelor's Degree</option>
+        <option value="master">Master's Degree</option>
+        <option value="phd">PhD</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Marital Status</label>
+      <select id="maritalStatus">
+        <option value="single">Single</option>
+        <option value="married" selected>Married</option>
+        <option value="divorced">Divorced</option>
+        <option value="widowed">Widowed</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Years Insured (0-50)</label>
+      <input type="number" id="yearsInsured" min="0" max="50" value="0">
+    </div>
+
     <div class="action-row">
       <button type="button" id="send">Get Estimate</button>
     </div>
@@ -232,7 +291,15 @@
       kids: parseInt(document.getElementById('kids').value || '0'),
       bmi: parseFloat(document.getElementById('bmi').value || '0'),
       existingCondition: document.getElementById('existingCondition').value,
-      model: document.getElementById('model').value
+      model: document.getElementById('model').value,
+      // New fields
+      income: document.getElementById('income').value,
+      employment: document.getElementById('employment').value,
+      healthScore: parseInt(document.getElementById('healthScore').value || '7'),
+      exerciseFrequency: parseInt(document.getElementById('exerciseFrequency').value || '3'),
+      education: document.getElementById('education').value,
+      maritalStatus: document.getElementById('maritalStatus').value,
+      yearsInsured: parseInt(document.getElementById('yearsInsured').value || '0')
     };
 
     if (!payload.name || payload.age <= 0 || payload.bmi <= 0) {

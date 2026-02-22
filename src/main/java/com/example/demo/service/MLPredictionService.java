@@ -24,32 +24,52 @@ public class MLPredictionService {
      * @param kids number of kids
      * @param smoker whether the person is a smoker
      * @param location location (e.g., northeast, southeast, southwest, northwest)
+     * @param income income level (low, medium, high, very_high)
+     * @param employment employment status (employed, self_employed, unemployed, retired)
+     * @param healthScore health score 1-10
+     * @param exerciseFrequency exercise frequency (0-7 days per week)
+     * @param education education level (high_school, bachelor, master, phd)
+     * @param maritalStatus marital status (single, married, divorced, widowed)
+     * @param yearsInsured years with insurance
      * @param modelName model to use (random_forest, decision_tree, linear_regression). If null, uses default.
      * @return map containing model name and predicted cost
      */
-    public Map<String, Object> predictInsuranceCost(int age, String gender, double bmi, int kids, boolean smoker, String location, String modelName) {
+    public Map<String, Object> predictInsuranceCost(int age, String gender, double bmi, int kids, boolean smoker, 
+            String location, String income, String employment, int healthScore, int exerciseFrequency,
+            String education, String maritalStatus, int yearsInsured, String modelName) {
         try {
             // Convert boolean smoker to yes/no (model was trained with these values)
             String smokerStr = smoker ? "yes" : "no";
             
-            // Normalize location to lowercase (model uses lowercase)
+            // Normalize inputs to lowercase
             location = location.toLowerCase();
+            income = income.toLowerCase();
+            employment = employment.toLowerCase();
+            education = education.toLowerCase();
+            maritalStatus = maritalStatus.toLowerCase();
             
-            // Build the Python command with arguments
+            // Build the Python command with arguments (using key=value format for clarity)
             String pythonExecutable = getPythonExecutable();
             ProcessBuilder pb;
             
-            // If model is specified, add --model argument
+            // Use key=value format to pass all parameters clearly
             if (modelName != null && !modelName.trim().isEmpty()) {
                 pb = new ProcessBuilder(
                         pythonExecutable,
                         PYTHON_SCRIPT_PATH,
-                        String.valueOf(age),
-                        gender.toLowerCase(),
-                        String.valueOf(bmi),
-                        String.valueOf(kids),
-                        smokerStr,
-                        location,
+                        "age=" + String.valueOf(age),
+                        "gender=" + gender.toLowerCase(),
+                        "bmi=" + String.valueOf(bmi),
+                        "kids=" + String.valueOf(kids),
+                        "smoker=" + smokerStr,
+                        "location=" + location,
+                        "income=" + income,
+                        "employment=" + employment,
+                        "health_score=" + String.valueOf(healthScore),
+                        "exercise_frequency=" + String.valueOf(exerciseFrequency),
+                        "education=" + education,
+                        "marital_status=" + maritalStatus,
+                        "years_insured=" + String.valueOf(yearsInsured),
                         "--model",
                         modelName
                 );
@@ -57,12 +77,19 @@ public class MLPredictionService {
                 pb = new ProcessBuilder(
                         pythonExecutable,
                         PYTHON_SCRIPT_PATH,
-                        String.valueOf(age),
-                        gender.toLowerCase(),
-                        String.valueOf(bmi),
-                        String.valueOf(kids),
-                        smokerStr,
-                        location
+                        "age=" + String.valueOf(age),
+                        "gender=" + gender.toLowerCase(),
+                        "bmi=" + String.valueOf(bmi),
+                        "kids=" + String.valueOf(kids),
+                        "smoker=" + smokerStr,
+                        "location=" + location,
+                        "income=" + income,
+                        "employment=" + employment,
+                        "health_score=" + String.valueOf(healthScore),
+                        "exercise_frequency=" + String.valueOf(exerciseFrequency),
+                        "education=" + education,
+                        "marital_status=" + maritalStatus,
+                        "years_insured=" + String.valueOf(yearsInsured)
                 );
             }
 
@@ -120,7 +147,12 @@ public class MLPredictionService {
                 double prediction = ((Number) jsonResult.get("prediction")).doubleValue();
                 String usedModel = (String) jsonResult.getOrDefault("model", modelName != null ? modelName : "random_forest");
                 
-                System.out.println("[ML Service] Successfully predicted: $" + prediction + " using " + usedModel + " for age=" + age + ", gender=" + gender + ", bmi=" + bmi + ", kids=" + kids + ", smoker=" + smokerStr + ", location=" + location);
+                System.out.println("[ML Service] Successfully predicted: $" + prediction + " using " + usedModel + 
+                    " | age=" + age + ", gender=" + gender + ", bmi=" + bmi + ", kids=" + kids + 
+                    ", smoker=" + smokerStr + ", location=" + location + ", income=" + income + 
+                    ", employment=" + employment + ", health_score=" + healthScore + 
+                    ", exercise=" + exerciseFrequency + ", education=" + education + 
+                    ", marital=" + maritalStatus + ", years_insured=" + yearsInsured);
                 
                 Map<String, Object> responseMap = new HashMap<>();
                 responseMap.put("model", usedModel);

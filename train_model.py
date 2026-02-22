@@ -27,7 +27,7 @@ sns.set_palette('husl')
 np.random.seed(42)
 n_samples = 500
 
-# Create synthetic dataset
+# Create synthetic dataset with expanded features
 data = {
     'age': np.random.randint(18, 80, n_samples),
     'gender': np.random.choice(['male', 'female'], n_samples),
@@ -35,12 +35,20 @@ data = {
     'kids': np.random.randint(0, 5, n_samples),
     'smoker': np.random.choice([True, False], n_samples),
     'location': np.random.choice(['northeast', 'southeast', 'southwest', 'northwest'], n_samples),
+    # New features for improved prediction
+    'income_level': np.random.choice(['low', 'medium', 'high', 'very_high'], n_samples),
+    'employment_status': np.random.choice(['employed', 'self_employed', 'unemployed', 'retired'], n_samples),
+    'health_score': np.random.randint(1, 11, n_samples),  # 1-10 scale
+    'exercise_frequency': np.random.randint(0, 7, n_samples),  # days per week
+    'education_level': np.random.choice(['high_school', 'bachelor', 'master', 'phd'], n_samples),
+    'marital_status': np.random.choice(['single', 'married', 'divorced', 'widowed'], n_samples),
+    'years_insured': np.random.randint(0, 50, n_samples),
 }
 
 df = pd.DataFrame(data)
 
 # Generate insurance costs based on features (synthetic ground truth)
-# Base cost + age factor + BMI factor + smoker factor + kids factor + location factor
+# Base cost + age factor + BMI factor + smoker factor + kids factor + location factor + new features
 base_cost = 3000
 df['cost'] = (
     base_cost +
@@ -50,6 +58,19 @@ df['cost'] = (
     (df['smoker'].astype(int) * 5000) +  # Smokers pay much more
     ((df['location'] == 'northeast').astype(int) * 2000) +  # Northeast is more expensive
     ((df['location'] == 'southeast').astype(int) * 1500) +  # Southeast is moderately expensive
+    # New feature factors
+    ((df['income_level'] == 'low').astype(int) * 1500) +  # Lower income = slightly higher (risk)
+    ((df['income_level'] == 'high').astype(int) * -500) +  # Higher income = slight discount
+    ((df['income_level'] == 'very_high').astype(int) * -1000) +  # Very high income = more discount
+    ((df['employment_status'] == 'unemployed').astype(int) * 2000) +  # Unemployed = higher risk
+    ((df['employment_status'] == 'self_employed').astype(int) * 800) +  # Self-employed = slightly higher
+    ((df['employment_status'] == 'retired').astype(int) * 1200) +  # Retired = higher risk
+    ((11 - df['health_score']) * 300) +  # Lower health score = higher cost
+    ((7 - df['exercise_frequency']) * 200) +  # Less exercise = higher cost
+    ((df['education_level'] == 'phd').astype(int) * -600) +  # Higher education = discount
+    ((df['education_level'] == 'master').astype(int) * -400) +  # Master's = slight discount
+    ((df['education_level'] == 'high_school').astype(int) * 300) +  # High school = slight premium
+    (df['years_insured'] * 50) +  # Longer insurance history = experienced driver
     np.random.normal(0, 500, n_samples)  # Add some noise
 )
 
@@ -65,13 +86,23 @@ print(df['cost'].describe())
 # Preprocess: encode categorical variables
 le_gender = LabelEncoder()
 le_location = LabelEncoder()
+le_income = LabelEncoder()
+le_employment = LabelEncoder()
+le_education = LabelEncoder()
+le_marital = LabelEncoder()
 
 df['gender_encoded'] = le_gender.fit_transform(df['gender'])
 df['location_encoded'] = le_location.fit_transform(df['location'])
+df['income_encoded'] = le_income.fit_transform(df['income_level'])
+df['employment_encoded'] = le_employment.fit_transform(df['employment_status'])
+df['education_encoded'] = le_education.fit_transform(df['education_level'])
+df['marital_encoded'] = le_marital.fit_transform(df['marital_status'])
 df['smoker_int'] = df['smoker'].astype(int)
 
-# Features and target
-X = df[['age', 'gender_encoded', 'bmi', 'kids', 'smoker_int', 'location_encoded']]
+# Features and target - includes new features
+X = df[['age', 'gender_encoded', 'bmi', 'kids', 'smoker_int', 'location_encoded', 
+         'income_encoded', 'employment_encoded', 'health_score', 'exercise_frequency',
+         'education_encoded', 'marital_encoded', 'years_insured']]
 y = df['cost']
 
 # Split data
@@ -349,10 +380,24 @@ print(f"[+] Linear Regression saved to: {lr_path}")
 # Save encoders
 le_gender_path = os.path.join(model_dir, 'label_encoder_gender.pkl')
 le_location_path = os.path.join(model_dir, 'label_encoder_location.pkl')
+le_income_path = os.path.join(model_dir, 'label_encoder_income.pkl')
+le_employment_path = os.path.join(model_dir, 'label_encoder_employment.pkl')
+le_education_path = os.path.join(model_dir, 'label_encoder_education.pkl')
+le_marital_path = os.path.join(model_dir, 'label_encoder_marital.pkl')
+
 joblib.dump(le_gender, le_gender_path)
 joblib.dump(le_location, le_location_path)
+joblib.dump(le_income, le_income_path)
+joblib.dump(le_employment, le_employment_path)
+joblib.dump(le_education, le_education_path)
+joblib.dump(le_marital, le_marital_path)
+
 print(f"\n[+] Gender encoder saved to: {le_gender_path}")
 print(f"[+] Location encoder saved to: {le_location_path}")
+print(f"[+] Income encoder saved to: {le_income_path}")
+print(f"[+] Employment encoder saved to: {le_employment_path}")
+print(f"[+] Education encoder saved to: {le_education_path}")
+print(f"[+] Marital Status encoder saved to: {le_marital_path}")
 
 # Save model configuration with all metrics
 config_path = os.path.join(model_dir, 'model_config.json')
@@ -374,8 +419,10 @@ def convert_to_serializable(obj):
 config = {
     'models': ['random_forest', 'decision_tree', 'linear_regression'],
     'default_model': 'random_forest',
-    'feature_names': ['age', 'gender_encoded', 'bmi', 'kids', 'smoker_int', 'location_encoded'],
-    'encoders': ['gender', 'location'],
+    'feature_names': ['age', 'gender_encoded', 'bmi', 'kids', 'smoker_int', 'location_encoded',
+                      'income_encoded', 'employment_encoded', 'health_score', 'exercise_frequency',
+                      'education_encoded', 'marital_encoded', 'years_insured'],
+    'encoders': ['gender', 'location', 'income', 'employment', 'education', 'marital'],
     'metrics': {
         'random_forest': convert_to_serializable(metrics['random_forest']),
         'decision_tree': convert_to_serializable(metrics['decision_tree']),
@@ -393,8 +440,12 @@ print(f"[+] Configuration saved to: {config_path}")
 print("\n" + "="*60)
 print("Sample Predictions")
 print("="*60)
-sample_input = np.array([[45, 1, 28.5, 2, 0, 2]])  # age, gender_encoded, bmi, kids, smoker_int, location_encoded
-print("\nInput: age=45, gender=female, bmi=28.5, kids=2, smoker=False, location=TX")
+# age, gender_encoded, bmi, kids, smoker_int, location_encoded, income_encoded, employment_encoded,
+# health_score, exercise_frequency, education_encoded, marital_encoded, years_insured
+sample_input = np.array([[45, 1, 28.5, 2, 0, 2, 1, 0, 7, 4, 1, 1, 10]])
+print("\nInput: age=45, gender=female, bmi=28.5, kids=2, smoker=False, location=southeast,")
+print("       income=medium, employment=employed, health_score=7, exercise=4 days/week,")
+print("       education=bachelor, marital=married, years_insured=10")
 print("\nPredictions:")
 for model_name, model_obj in models.items():
     prediction = model_obj.predict(sample_input)[0]

@@ -4,9 +4,29 @@ Called from Java via subprocess with command-line arguments.
 Dynamically loads feature names and encoders from model config.
 
 Usage:
+  python predict_model.py age=<val> gender=<val> bmi=<val> kids=<val> smoker=<val> location=<val> \
+                          income=<val> employment=<val> health_score=<val> exercise_frequency=<val> \
+                          education=<val> marital_status=<val> years_insured=<val> [--model <model_name>]
+  
+  OR legacy positional format:
   python predict_model.py <age> <gender> <bmi> <kids> <smoker> <location> [--model <model_name>]
   
 Model options: random_forest, decision_tree, linear_regression
+
+Parameters:
+  age: Integer (18-100)
+  gender: male, female
+  bmi: Float (15-50)
+  kids: Integer (0-10)
+  smoker: yes/no, true/false, 1/0
+  location: northeast, southeast, southwest, northwest
+  income: low, medium, high, very_high
+  employment: employed, self_employed, unemployed, retired
+  health_score: Integer (1-10)
+  exercise_frequency: Integer (0-7) days per week
+  education: high_school, bachelor, master, phd
+  marital_status: single, married, divorced, widowed
+  years_insured: Integer (0-50)
 """
 
 import sys
@@ -79,12 +99,12 @@ def main():
                 encoders[encoder_name] = joblib.load(encoder_path)
         
         # Parse input arguments into a dict
-        # Format: key1=value1 key2=value2 ... or positional args
+        # Support both key=value format and legacy positional format
         input_dict = {}
         positional_args = [arg for arg in sys.argv[1:] if not arg.startswith('--') and sys.argv[sys.argv.index(arg) - 1] != '--model']
         
         if len(positional_args) > 0 and '=' in positional_args[0]:
-            # JSON or key=value format
+            # key=value format
             for arg in positional_args:
                 if '=' in arg:
                     key, value = arg.split('=', 1)
@@ -94,26 +114,39 @@ def main():
                     else:
                         input_dict[key] = value
         else:
-            # Positional arguments (legacy format)
-            if len(positional_args) != 6:
-                print(f"Error: Expected 6 positional arguments, got {len(positional_args)}. Args: {positional_args}", file=sys.stderr)
+            # Legacy positional format - first 6 args are required, rest are new features
+            if len(positional_args) < 6:
+                print(f"Error: Expected at least 6 positional arguments for legacy format, got {len(positional_args)}. Args: {positional_args}", file=sys.stderr)
                 sys.exit(1)
+            
+            # Legacy arguments
+            age_val = positional_args[0]
+            gender_val = positional_args[1].lower()
+            bmi_val = positional_args[2]
+            kids_val = positional_args[3]
             smoker_val = positional_args[4].lower()
+            location_val = positional_args[5]
+            
             if smoker_val in ('true', '1', 'yes'):
                 smoker_val = 'yes'
             elif smoker_val in ('false', '0', 'no'):
                 smoker_val = 'no'
-            # Accept location as region (since Python script calls it location in Java)
-            location_val = positional_args[5]
+            
             input_dict = {
-                'age': positional_args[0],
-                'gender': positional_args[1],
-                'bmi': positional_args[2],
-                'children': positional_args[3],
+                'age': age_val,
+                'gender': gender_val,
+                'bmi': bmi_val,
+                'kids': kids_val,
                 'smoker': smoker_val,
-                'region': location_val,
-                'location': location_val  # Add as both for compatibility
+                'location': location_val,
             }
+            
+            # Optional new features from positional args (index 6+)
+            new_feature_names = ['income', 'employment', 'health_score', 'exercise_frequency',
+                                 'education', 'marital_status', 'years_insured']
+            for idx, feature_name in enumerate(new_feature_names):
+                if len(positional_args) > 6 + idx:
+                    input_dict[feature_name] = positional_args[6 + idx]
         
         # Build feature vector based on config
         features = []
@@ -126,36 +159,38 @@ def main():
                     value = None
                     if col_name in input_dict:
                         value = input_dict[col_name]
-                    elif col_name + 's' in input_dict:  # plural form
-                        value = input_dict[col_name + 's']
-                    elif col_name == 'children' and 'kids' in input_dict:
-                        value = input_dict['kids']
-                    elif col_name == 'region' and 'location' in input_dict:
-                        value = input_dict['location']
+                    elif col_name == 'marital' and 'marital_status' in input_dict:
+                        value = input_dict['marital_status']
+                    elif col_name == 'employment' and 'employment_status' in input_dict:
+                        value = input_dict['employment_status']
                     
                     if value is None:
-                        print(f"Error: Missing value for column '{col_name}'. Available keys: {list(input_dict.keys())}", file=sys.stderr)
+                        print(f"Error: Missing value for field '{col_name}'. Available keys: {list(input_dict.keys())}", file=sys.stderr)
                         sys.exit(1)
                     
                     try:
                         encoded_value = encoders[col_name].transform([str(value).lower()])[0]
                         features.append(encoded_value)
                     except ValueError as ve:
-                        print(f"Error: Unknown value '{value}' for column '{col_name}'. Valid values: {list(encoders[col_name].classes_)}", file=sys.stderr)
+                        print(f"Error: Unknown value '{value}' for field '{col_name}'. Valid values: {list(encoders[col_name].classes_)}", file=sys.stderr)
                         sys.exit(1)
             else:
                 # Numeric feature
                 value = None
+                
+                # Handle feature name variations
                 if feature in input_dict:
                     value = input_dict[feature]
-                elif feature == 'children' and 'kids' in input_dict:
-                    value = input_dict['kids']
                 elif feature == 'kids' and 'children' in input_dict:
                     value = input_dict['children']
                 elif feature == 'smoker_int' and 'smoker' in input_dict:
                     # Convert yes/no to 1/0
                     smoker_val = input_dict['smoker']
                     value = 1 if smoker_val in ('yes', '1', 'true', True) else 0
+                elif feature == 'exercise_frequency' and 'exercise' in input_dict:
+                    value = input_dict['exercise']
+                elif feature == 'years_insured' and 'years' in input_dict:
+                    value = input_dict['years']
                 
                 if value is not None:
                     try:
@@ -164,7 +199,7 @@ def main():
                         print(f"Error: Invalid numeric value for '{feature}': {value}", file=sys.stderr)
                         sys.exit(1)
                 else:
-                    print(f"Error: Missing value for numeric feature '{feature}'. Available keys: {list(input_dict.keys())}", file=sys.stderr)
+                    print(f"Error: Missing value for field '{feature}'. Available keys: {list(input_dict.keys())}", file=sys.stderr)
                     sys.exit(1)
         
         # Make prediction
