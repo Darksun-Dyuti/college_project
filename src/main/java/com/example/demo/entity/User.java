@@ -33,6 +33,9 @@ public class User {
     private LocalDateTime createdAt = LocalDateTime.now();
     
     private LocalDateTime updatedAt;
+
+    @Column
+    private Integer PredictCount;
     
     // Constructors
     public User() {
@@ -121,5 +124,12 @@ public class User {
     @PreUpdate
     public void setLastUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public Integer getPredictCount() {
+        return PredictCount;
+    }
+    public void setPredictCount(Integer predictCount) {
+        PredictCount = predictCount;
     }
 }

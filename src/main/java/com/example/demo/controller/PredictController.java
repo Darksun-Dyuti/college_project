@@ -5,72 +5,42 @@ import com.example.demo.model.InsuranceResponse;
 import com.example.demo.service.MLPredictionService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 import java.util.Map;
-import java.util.Arrays;
-import java.util.List;
+import com.example.demo.service.UserService;
 
 @RestController
 @RequestMapping("/api")
 public class PredictController {
 
     private final MLPredictionService mlPredictionService;
-    
-    // List of available models
-    private static final List<String> AVAILABLE_MODELS = Arrays.asList(
-        "random_forest",
-        "gradient_boosting",
-        "decision_tree",
-        "linear_regression",
-        "ridge",
-        "lasso",
-        "elasticnet",
-        "svr",
-        "knn"
-    );
-    
-    private static final Map<String, String> MODEL_DESCRIPTIONS = Map.ofEntries(
-        Map.entry("random_forest", "Random Forest - Ensemble method combining multiple decision trees"),
-        Map.entry("gradient_boosting", "Gradient Boosting - Sequential ensemble building on prediction errors"),
-        Map.entry("decision_tree", "Decision Tree - Simple tree-based model"),
-        Map.entry("linear_regression", "Linear Regression - Simple linear model"),
-        Map.entry("ridge", "Ridge Regression - Linear regression with L2 regularization"),
-        Map.entry("lasso", "Lasso Regression - Linear regression with L1 regularization"),
-        Map.entry("elasticnet", "Elastic Net - Linear regression with combined L1/L2 regularization"),
-        Map.entry("svr", "Support Vector Regressor - Non-linear model using support vectors"),
-        Map.entry("knn", "K-Nearest Neighbors - Instance-based learning model")
-    );
+    private final UserService userService;
 
-    public PredictController(MLPredictionService mlPredictionService) {
+    public PredictController(MLPredictionService mlPredictionService, UserService userService) {
         this.mlPredictionService = mlPredictionService;
-    }
-
-    @GetMapping("/models")
-    public Map<String, Object> getAvailableModels() {
-        return Map.of(
-            "available_models", AVAILABLE_MODELS,
-            "default_model", "random_forest",
-            "descriptions", MODEL_DESCRIPTIONS
-        );
+        this.userService = userService;
     }
 
     @PostMapping(value = "/predict", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public InsuranceResponse predict(@RequestBody InsuranceRequest req) {
-        // Validate required fields
+    public InsuranceResponse predict(@RequestBody InsuranceRequest req,Authentication authentication) {
         if (req.getAge() == null || req.getAge() <= 0 || req.getAge() > 120) {
-            return new InsuranceResponse("Error: Age must be between 1 and 120");
+            return new InsuranceResponse("Error: Age must be between 1 and 120", null, null);
         }
         if (req.getBmi() == null || req.getBmi() <= 0 || req.getBmi() > 80) {
-            return new InsuranceResponse("Error: BMI must be between 1 and 80");
+            return new InsuranceResponse("Error: BMI must be between 1 and 80", null, null);
         }
         if (req.getGender() == null || req.getGender().trim().isEmpty()) {
-            return new InsuranceResponse("Error: Gender is required");
+            return new InsuranceResponse("Error: Gender is required", null, null);
         }
         if (req.getLocation() == null || req.getLocation().trim().isEmpty()) {
-            return new InsuranceResponse("Error: Location is required");
+            return new InsuranceResponse("Error: Location is required", null, null);
         }
         if (req.getKids() == null || req.getKids() < 0 || req.getKids() > 10) {
-            return new InsuranceResponse("Error: Number of kids must be between 0 and 10");
+            return new InsuranceResponse("Error: Number of kids must be between 0 and 10", null, null);
         }
+    
+        String username=authentication.getName();
+        Long userId=userService.findByUsername(username).get().getId();
 
         // Validate new fields with defaults
         String income = (req.getIncome() != null && !req.getIncome().trim().isEmpty()) ? req.getIncome() : "medium";
@@ -83,39 +53,39 @@ public class PredictController {
 
         // Validate ranges
         if (healthScore < 1 || healthScore > 10) {
-            return new InsuranceResponse("Error: Health score must be between 1 and 10");
+            return new InsuranceResponse("Error: Health score must be between 1 and 10", null, null);
         }
         if (exerciseFrequency < 0 || exerciseFrequency > 7) {
-            return new InsuranceResponse("Error: Exercise frequency must be between 0 and 7 days per week");
+            return new InsuranceResponse("Error: Exercise frequency must be between 0 and 7 days per week", null, null);
         }
         if (yearsInsured < 0 || yearsInsured > 50) {
-            return new InsuranceResponse("Error: Years insured must be between 0 and 50");
+            return new InsuranceResponse("Error: Years insured must be between 0 and 50", null, null);
         }
 
         // Validate enum-like values
         String[] validIncomes = {"low", "medium", "high", "very_high"};
         if (!java.util.Arrays.asList(validIncomes).contains(income.toLowerCase())) {
-            return new InsuranceResponse("Error: Income must be one of: low, medium, high, very_high");
+            return new InsuranceResponse("Error: Income must be one of: low, medium, high, very_high", null, null); 
         }
 
         String[] validEmployments = {"employed", "self_employed", "unemployed", "retired"};
         if (!java.util.Arrays.asList(validEmployments).contains(employment.toLowerCase())) {
-            return new InsuranceResponse("Error: Employment must be one of: employed, self_employed, unemployed, retired");
+            return new InsuranceResponse("Error: Employment must be one of: employed, self_employed, unemployed, retired", null, null);
         }
 
         String[] validEducations = {"high_school", "bachelor", "master", "phd"};
         if (!java.util.Arrays.asList(validEducations).contains(education.toLowerCase())) {
-            return new InsuranceResponse("Error: Education must be one of: high_school, bachelor, master, phd");
+            return new InsuranceResponse("Error: Education must be one of: high_school, bachelor, master, phd", null, null);
         }
 
         String[] validMarital = {"single", "married", "divorced", "widowed"};
         if (!java.util.Arrays.asList(validMarital).contains(maritalStatus.toLowerCase())) {
-            return new InsuranceResponse("Error: Marital status must be one of: single, married, divorced, widowed");
+            return new InsuranceResponse("Error: Marital status must be one of: single, married, divorced, widowed", null, null);
         }
 
         String[] validLocations = {"northeast", "southeast", "southwest", "northwest"};
         if (!java.util.Arrays.asList(validLocations).contains(req.getLocation().toLowerCase())) {
-            return new InsuranceResponse("Error: Location must be one of: northeast, southeast, southwest, northwest");
+            return new InsuranceResponse("Error: Location must be one of: northeast, southeast, southwest, northwest", null, null);
         }
 
         // Get ML model prediction with selected model
@@ -138,7 +108,8 @@ public class PredictController {
                 education,
                 maritalStatus,
                 yearsInsured,
-                selectedModel
+                selectedModel,
+                userId
         );
         
         String usedModel = (String) predictionResult.get("model");
@@ -198,6 +169,6 @@ public class PredictController {
             response.append("\nNote: Your existing condition(s) may impact the final premium. Please consult with an insurance agent for detailed information.\n");
         }
 
-        return new InsuranceResponse(response.toString());
+        return new InsuranceResponse(response.toString(), predictedCost, usedModel);
     }
 }

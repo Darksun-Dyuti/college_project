@@ -1,12 +1,27 @@
 package com.example.demo.model;
 
 public class InsuranceResponse {
-    private String result;
+    private String message;
+    private Double prediction;
+    private String model;
 
     public InsuranceResponse() {}
 
-    public InsuranceResponse(String result) { this.result = result; }
+    public InsuranceResponse(String message, Double prediction, String model) {
+        this.message = message;
+        this.prediction = prediction;
+        this.model = model;
+    }
+    public InsuranceResponse(String message) {
+        this.message = message;
+    }
 
-    public String getResult() { return result; }
-    public void setResult(String result) { this.result = result; }
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+
+    public Double getPrediction() { return prediction; }
+    public void setPrediction(Double prediction) { this.prediction = prediction; }
+
+    public String getModel() { return model; }
+    public void setModel(String model) { this.model = model; }
 }

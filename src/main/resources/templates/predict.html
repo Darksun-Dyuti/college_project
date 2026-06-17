@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make Prediction - Cost Prediction System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+        }
+        .navbar {
+            background: white;
+            padding: 15px 50px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .navbar-menu {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .navbar-menu a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 5px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .username {
+            color: #667eea;
+            font-weight: 600;
+        }
+        .btn-logout {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .prediction-header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .prediction-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .prediction-header p {
+            color: #666;
+        }
+        .prediction-form {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .btn-back:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">Cost Prediction System</div>
+        <div class="navbar-menu">
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <div class="user-info">
+                <span class="username">Welcome, <span sec:authentication="name"></span>!</span>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="btn-logout">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <a href="/dashboard" class="btn-back">Back to Dashboard</a>
+
+        <div class="prediction-header">
+            <h1>Make a Prediction</h1>
+            <p>Enter your details below to get an estimated insurance cost based on our ML model</p>
+        </div>
+
+        <div class="prediction-form">
+            <form id="predictionForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" name="age" min="1" max="120" required placeholder="Enter your age">
+                    </div>
+                    <div class="form-group">
+                        <label for="bmi">BMI</label>
+                        <input type="number" id="bmi" name="bmi" min="10" max="80" step="0.1" required placeholder="Enter your BMI">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kids">Number of Children</label>
+                        <input type="number" id="kids" name="kids" min="0" max="10" required placeholder="Number of kids">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="smoker">Smoker</label>
+                        <select id="smoker" name="smoker" required>
+                            <option value="">Select</option>
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <select id="location" name="location" required>
+                            <option value="">Select Location</option>
+                            <option value="northeast">Northeast</option>
+                            <option value="southeast">Southeast</option>
+                            <option value="southwest">Southwest</option>
+                            <option value="northwest">Northwest</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="income">Income Level</label>
+                        <select id="income" name="income">
+                            <option value="medium">Medium (default)</option>
+                            <option value="low">Low</option>
+                            <option value="high">High</option>
+                            <option value="very_high">Very High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="employment">Employment Status</label>
+                        <select id="employment" name="employment">
+                            <option value="employed">Employed (default)</option>
+                            <option value="self_employed">Self Employed</option>
+                            <option value="unemployed">Unemployed</option>
+                            <option value="retired">Retired</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="healthScore">Health Score (1-10)</label>
+                        <input type="number" id="healthScore" name="healthScore" min="1" max="10" placeholder="Health score">
+                    </div>
+                    <div class="form-group">
+                        <label for="exerciseFrequency">Exercise Frequency (days/week)</label>
+                        <input type="number" id="exerciseFrequency" name="exerciseFrequency" min="0" max="7" placeholder="Days per week">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="education">Education Level</label>
+                        <select id="education" name="education">
+                            <option value="bachelor">Bachelor (default)</option>
+                            <option value="high_school">High School</option>
+                            <option value="master">Master</option>
+                            <option value="phd">PhD</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="maritalStatus">Marital Status</label>
+                        <select id="maritalStatus" name="maritalStatus">
+                            <option value="single">Single (default)</option>
+                            <option value="married">Married</option>
+                            <option value="divorced">Divorced</option>
+                            <option value="widowed">Widowed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="yearsInsured">Years Insured</label>
+                        <input type="number" id="yearsInsured" name="yearsInsured" min="0" max="50" placeholder="Years of insurance">
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="model">Prediction Model</label>
+                        <select id="model" name="model">
+                            <option value="random_forest">Random Forest (default)</option>
+                            <option value="linear_regression">Linear Regression</option>
+                            <option value="xgboost">XGBoost</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Get Prediction</button>
+            </form>
+
+            <div id="result" style="margin-top: 30px; display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                age: parseInt(document.getElementById('age').value),
+                bmi: parseFloat(document.getElementById('bmi').value),
+                gender: document.getElementById('gender').value,
+                kids: parseInt(document.getElementById('kids').value),
+                smoker: document.getElementById('smoker').value === 'true',
+                location: document.getElementById('location').value,
+                income: document.getElementById('income').value,
+                employment: document.getElementById('employment').value,
+                healthScore: parseInt(document.getElementById('healthScore').value) || 7,
+                exerciseFrequency: parseInt(document.getElementById('exerciseFrequency').value) || 3,
+                education: document.getElementById('education').value,
+                maritalStatus: document.getElementById('maritalStatus').value,
+                yearsInsured: parseInt(document.getElementById('yearsInsured').value) || 0,
+                model: document.getElementById('model').value
+            };
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                const resultDiv = document.getElementById('result');
+                if (result.prediction !== undefined) {
+                    resultDiv.innerHTML = `
+                        <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 20px; color: #155724;">
+                            <h3>Prediction Result</h3>
+                            <p><strong>Estimated Annual Cost:</strong> $${parseFloat(result.prediction).toFixed(2)}</p>
+                            <p><strong>Model Used:</strong> ${result.model || 'Random Forest'}</p>
+                            <p>${result.message || ''}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 20px; color: #721c24;">
+                            <h3>Error</h3>
+                            <p>${result.message || 'An error occurred while processing your prediction'}</p>
+                        </div>
+                    `;
+                }
+                resultDiv.style.display = 'block';
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 20px; color: #721c24;">
+                        <h3>Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

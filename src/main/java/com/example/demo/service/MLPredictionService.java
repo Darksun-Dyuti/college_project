@@ -1,10 +1,14 @@
 package com.example.demo.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import com.example.demo.entity.User;
+
 
 /**
  * Service that calls a trained scikit-learn model via Python subprocess.
@@ -12,6 +16,9 @@ import java.util.Map;
  */
 @Service
 public class MLPredictionService {
+
+    @Autowired
+    private UserService userService;
 
     private static final String PYTHON_SCRIPT_PATH = "src/main/resources/predict_model.py";
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -36,7 +43,9 @@ public class MLPredictionService {
      */
     public Map<String, Object> predictInsuranceCost(int age, String gender, double bmi, int kids, boolean smoker, 
             String location, String income, String employment, int healthScore, int exerciseFrequency,
-            String education, String maritalStatus, int yearsInsured, String modelName) {
+            String education, String maritalStatus, int yearsInsured, String modelName,Long userId) {
+
+                User user = userService.findById(userId);
         try {
             // Convert boolean smoker to yes/no (model was trained with these values)
             String smokerStr = smoker ? "yes" : "no";
@@ -107,8 +116,10 @@ public class MLPredictionService {
             
             // Read stdout (prediction result)
             while ((line = stdoutReader.readLine()) != null) {
-                if (!line.trim().isEmpty() && !line.contains("UserWarning") && !line.contains("FutureWarning")) {
-                    output.append(line).append("\n");
+                String trimmed = line.trim();
+                if (!trimmed.isEmpty() && trimmed.startsWith("{")) {
+                    output.append(trimmed);
+                    break; // we only need the JSON line
                 }
             }
             
@@ -157,6 +168,9 @@ public class MLPredictionService {
                 Map<String, Object> responseMap = new HashMap<>();
                 responseMap.put("model", usedModel);
                 responseMap.put("prediction", prediction);
+                user.setPredictCount(user.getPredictCount() == null ? 1 : user.getPredictCount() + 1);
+                userService.save(user);
+
                 return responseMap;
             } catch (Exception jsonEx) {
                 // Fallback: try to parse as plain number (for backward compatibility)
@@ -166,6 +180,8 @@ public class MLPredictionService {
                     Map<String, Object> responseMap = new HashMap<>();
                     responseMap.put("model", modelName != null ? modelName : "random_forest");
                     responseMap.put("prediction", prediction);
+                    user.setPredictCount(user.getPredictCount() == null ? 1 : user.getPredictCount() + 1);
+                    userService.save(user);
                     return responseMap;
                 } catch (NumberFormatException e) {
                     System.err.println("[ML Service] Failed to parse prediction: '" + result + "' | Error: " + e.getMessage());

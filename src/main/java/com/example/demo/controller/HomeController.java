@@ -20,12 +20,4 @@ public class HomeController {
         
         return "index";
     }
-    
-    @GetMapping("/dashboard")
-    public String dashboard(Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        model.addAttribute("username", auth.getName());
-        model.addAttribute("authorities", auth.getAuthorities());
-        return "dashboard";
-    }
 }
