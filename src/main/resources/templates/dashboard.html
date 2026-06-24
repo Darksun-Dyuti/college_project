@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,10 +11,12 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f6fa;
         }
+
         .navbar {
             background: white;
             padding: 15px 50px;
@@ -22,16 +25,19 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .navbar-brand {
             font-size: 24px;
             font-weight: bold;
             color: #667eea;
         }
+
         .navbar-menu {
             display: flex;
             gap: 20px;
             align-items: center;
         }
+
         .navbar-menu a {
             color: #333;
             text-decoration: none;
@@ -39,15 +45,18 @@
             padding: 8px 16px;
             border-radius: 5px;
         }
+
         .user-info {
             display: flex;
             align-items: center;
             gap: 15px;
         }
+
         .username {
             color: #667eea;
             font-weight: 600;
         }
+
         .btn-logout {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -57,11 +66,13 @@
             cursor: pointer;
             font-weight: 600;
         }
+
         .container {
             max-width: 1400px;
             margin: 30px auto;
             padding: 20px;
         }
+
         .dashboard-header {
             background: white;
             padding: 30px;
@@ -69,38 +80,46 @@
             margin-bottom: 30px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
+
         .dashboard-header h1 {
             color: #333;
             margin-bottom: 10px;
         }
+
         .dashboard-header p {
             color: #666;
         }
+
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
             margin-bottom: 30px;
         }
+
         .card {
             background: white;
             padding: 25px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
+
         .card h3 {
             color: #667eea;
             margin-bottom: 15px;
             font-size: 20px;
         }
+
         .card p {
             color: #666;
             margin-bottom: 20px;
         }
+
         .card-button {
             display: inline-block;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -110,34 +129,41 @@
             text-decoration: none;
             font-weight: 600;
         }
+
         .card-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
+
         .stats-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
+
         .stat-number {
             font-size: 48px;
             font-weight: bold;
             margin: 20px 0;
         }
+
         .recommendations-section {
             margin-top: 40px;
         }
+
         .section-title {
             color: #333;
             font-size: 24px;
             margin-bottom: 20px;
             font-weight: 600;
         }
+
         .recommendations-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 25px;
             margin-bottom: 40px;
         }
+
         .recommendation-card {
             background: white;
             padding: 25px;
@@ -145,11 +171,13 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border-left: 4px solid #667eea;
         }
+
         .recommendation-card h4 {
             color: #333;
             margin-bottom: 8px;
             font-size: 18px;
         }
+
         .reason {
             background: #f0f4ff;
             color: #667eea;
@@ -160,24 +188,29 @@
             display: inline-block;
             margin-bottom: 12px;
         }
+
         .details {
             color: #666;
             font-size: 14px;
             line-height: 1.6;
             margin-bottom: 15px;
         }
+
         .detail-row {
             margin-bottom: 8px;
         }
+
         .detail-label {
             font-weight: 600;
             color: #333;
         }
+
         .rating {
             color: #ffc107;
             font-weight: 600;
             margin-top: 10px;
         }
+
         .no-recommendations {
             background: #fff3cd;
             border: 1px solid #ffc107;
@@ -186,6 +219,7 @@
             color: #856404;
             margin-bottom: 20px;
         }
+
         .alert-success {
             background: #d4edda;
             border: 1px solid #c3e6cb;
@@ -194,6 +228,7 @@
             color: #155724;
             margin-bottom: 20px;
         }
+
         .alert-error {
             background: #f8d7da;
             border: 1px solid #f5c6cb;
@@ -204,6 +239,7 @@
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <div class="navbar-brand">Cost Prediction System</div>
@@ -236,30 +272,30 @@
             </div>
 
             <div class="card">
-                <h3>🎯 Make Prediction</h3>
+                <h3>Make Prediction</h3>
                 <p>Use our ML model to predict insurance costs based on customer data</p>
                 <a href="/predict" class="card-button">Start Prediction</a>
             </div>
 
             <div class="card">
-                <h3>📊 View History</h3>
+                <h3>View History</h3>
                 <p>Review your past predictions and analysis</p>
                 <a href="/dashboard/history" class="card-button">View History</a>
             </div>
 
             <div class="card" sec:authorize="hasRole('ADMIN')">
-                <h3>⚙️ Model Management</h3>
+                <h3>Model Management</h3>
                 <p>Train and manage machine learning models (Admin Only)</p>
                 <a href="/api/model" class="card-button">Manage Models</a>
             </div>
 
             <div class="card">
-                <h3>❤️ Health Profile</h3>
+                <h3>Health Profile</h3>
                 <p>Add your health conditions to receive personalized recommendations</p>
                 <a href="/dashboard/health" class="card-button">Manage Health Profile</a>
             </div>
 
-            
+
         </div>
 
         <div class="recommendations-section" th:if="${hasConditions}">
@@ -335,8 +371,10 @@
         <div th:if="${!hasConditions}" class="no-recommendations">
             <strong>No Health Conditions Recorded</strong>
             <p>Add your health conditions to receive personalized doctor and hospital recommendations.</p>
-            <a href="/dashboard/health" style="color: #856404; text-decoration: underline;">Click here to add your health profile</a>
+            <a href="/dashboard/health" style="color: #856404; text-decoration: underline;">Click here to add your
+                health profile</a>
         </div>
     </div>
 </body>
+
 </html>
