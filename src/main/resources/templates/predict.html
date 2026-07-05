@@ -131,9 +131,40 @@
             width: 100%;
             margin-top: 20px;
         }
+        .btn-submit:disabled {
+            opacity: 0.75;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
         .btn-submit:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        .loader-wrap {
+            display: none;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #eef1ff;
+            color: #3f4fa8;
+            font-weight: 600;
+            align-items: center;
+            gap: 10px;
+        }
+        .loader {
+            width: 18px;
+            height: 18px;
+            border: 3px solid #cfd6ff;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            flex-shrink: 0;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
         .btn-back {
             background: #6c757d;
@@ -210,26 +241,33 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="location">Location</label>
-                        <select id="location" name="location" required>
-                            <option value="">Select Location</option>
-                            <option value="northeast">Northeast</option>
-                            <option value="southeast">Southeast</option>
-                            <option value="southwest">Southwest</option>
-                            <option value="northwest">Northwest</option>
+                        <label for="state">State</label>
+                        <select id="state" name="state" required>
+                            <option value="">Select State</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Kerala">Kerala</option>
+                            <option value="Telangana">Telangana</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="West Bengal">West Bengal</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                            <option value="Rajasthan">Rajasthan</option>
+                            <option value="Punjab">Punjab</option>
+                            <option value="Haryana">Haryana</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Odisha">Odisha</option>
+                            <option value="Assam">Assam</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="income">Income Level</label>
-                        <select id="income" name="income">
-                            <option value="medium">Medium (default)</option>
-                            <option value="low">Low</option>
-                            <option value="high">High</option>
-                            <option value="very_high">Very High</option>
-                        </select>
+                        <label for="annualIncome">Annual Income (INR)</label>
+                        <input type="number" id="annualIncome" name="annualIncome" min="0" step="1000" required placeholder="e.g. 850000">
                     </div>
                     <div class="form-group">
                         <label for="employment">Employment Status</label>
@@ -244,8 +282,8 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="healthScore">Health Score (1-10)</label>
-                        <input type="number" id="healthScore" name="healthScore" min="1" max="10" placeholder="Health score">
+                        <label>Health Score</label>
+                        <input type="text" value="Auto-calculated from your Health Profile" readonly>
                     </div>
                     <div class="form-group">
                         <label for="exerciseFrequency">Exercise Frequency (days/week)</label>
@@ -281,19 +319,14 @@
                     </div>
                 </div>
 
-                <div class="form-row full">
-                    <div class="form-group">
-                        <label for="model">Prediction Model</label>
-                        <select id="model" name="model">
-                            <option value="random_forest">Random Forest (default)</option>
-                            <option value="linear_regression">Linear Regression</option>
-                            <option value="xgboost">XGBoost</option>
-                        </select>
-                    </div>
-                </div>
+                
 
                 <button type="submit" class="btn-submit">Get Prediction</button>
             </form>
+            <div id="loaderWrap" class="loader-wrap" aria-live="polite">
+                <span class="loader" aria-hidden="true"></span>
+                <span>Calculating your premium prediction...</span>
+            </div>
 
             <div id="result" style="margin-top: 30px; display: none;"></div>
         </div>
@@ -302,25 +335,32 @@
     <script>
         document.getElementById('predictionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const submitButton = this.querySelector('.btn-submit');
+            const loaderWrap = document.getElementById('loaderWrap');
+            const resultDiv = document.getElementById('result');
 
-            const formData = {
-                age: parseInt(document.getElementById('age').value),
-                bmi: parseFloat(document.getElementById('bmi').value),
-                gender: document.getElementById('gender').value,
-                kids: parseInt(document.getElementById('kids').value),
-                smoker: document.getElementById('smoker').value === 'true',
-                location: document.getElementById('location').value,
-                income: document.getElementById('income').value,
-                employment: document.getElementById('employment').value,
-                healthScore: parseInt(document.getElementById('healthScore').value) || 7,
-                exerciseFrequency: parseInt(document.getElementById('exerciseFrequency').value) || 3,
-                education: document.getElementById('education').value,
-                maritalStatus: document.getElementById('maritalStatus').value,
-                yearsInsured: parseInt(document.getElementById('yearsInsured').value) || 0,
-                model: document.getElementById('model').value
-            };
+            submitButton.disabled = true;
+            submitButton.textContent = 'Predicting...';
+            loaderWrap.style.display = 'flex';
+            resultDiv.style.display = 'none';
+            resultDiv.innerHTML = '';
 
             try {
+                const formData = {
+                    age: parseInt(document.getElementById('age').value),
+                    bmi: parseFloat(document.getElementById('bmi').value),
+                    gender: document.getElementById('gender').value,
+                    kids: parseInt(document.getElementById('kids').value),
+                    smoker: document.getElementById('smoker').value === 'true',
+                    state: document.getElementById('state').value,
+                    annualIncome: parseFloat(document.getElementById('annualIncome').value),
+                    employment: document.getElementById('employment').value,
+                    exerciseFrequency: parseInt(document.getElementById('exerciseFrequency').value) || 3,
+                    education: document.getElementById('education').value,
+                    maritalStatus: document.getElementById('maritalStatus').value,
+                    yearsInsured: parseInt(document.getElementById('yearsInsured').value) || 0
+                };
+
                 const response = await fetch('/api/predict', {
                     method: 'POST',
                     headers: {
@@ -329,15 +369,17 @@
                     body: JSON.stringify(formData)
                 });
 
-                const result = await response.json();
+                const contentType = response.headers.get('content-type') || '';
+                const result = contentType.includes('application/json')
+                    ? await response.json()
+                    : { message: `Request failed with status ${response.status}` };
 
-                const resultDiv = document.getElementById('result');
                 if (result.prediction !== undefined) {
                     resultDiv.innerHTML = `
                         <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 20px; color: #155724;">
                             <h3>Prediction Result</h3>
-                            <p><strong>Estimated Annual Cost:</strong> $${parseFloat(result.prediction).toFixed(2)}</p>
-                            <p><strong>Model Used:</strong> ${result.model || 'Random Forest'}</p>
+                            <p><strong>Estimated Annual Cost:</strong> INR ${parseFloat(result.prediction).toLocaleString('en-IN', {maximumFractionDigits: 2})}</p>
+                            <p><strong>Model Used:</strong> ${result.model || 'Auto-selected'}</p>
                             <p>${result.message || ''}</p>
                         </div>
                     `;
@@ -352,7 +394,6 @@
                 resultDiv.style.display = 'block';
                 resultDiv.scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
-                const resultDiv = document.getElementById('result');
                 resultDiv.innerHTML = `
                     <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 20px; color: #721c24;">
                         <h3>Error</h3>
@@ -360,6 +401,10 @@
                     </div>
                 `;
                 resultDiv.style.display = 'block';
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Get Prediction';
+                loaderWrap.style.display = 'none';
             }
         });
     </script>
