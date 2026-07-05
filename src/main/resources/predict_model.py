@@ -35,13 +35,61 @@ import numpy as np
 import os
 import json
 
+
+def resolve_model_path(model_dir, model_name):
+    model_files = {
+        'random_forest': 'insurance_model.pkl',
+        'decision_tree': 'insurance_model_decision_tree.pkl',
+        'linear_regression': 'insurance_model_linear_regression.pkl'
+    }
+
+    candidates = []
+    mapped = model_files.get(model_name)
+    if mapped:
+        candidates.append(mapped)
+
+    candidates.append(f'insurance_model_{model_name}.pkl')
+    candidates.append(f'{model_name}.pkl')
+
+    for file_name in candidates:
+        candidate_path = os.path.join(model_dir, file_name)
+        if os.path.exists(candidate_path):
+            return candidate_path
+
+    return None
+
+
+def select_best_model(config, model_dir):
+    available_models = config.get('models', [])
+    metrics = config.get('metrics', {})
+    default_model = config.get('default_model', 'random_forest')
+
+    models_with_files = [m for m in available_models if resolve_model_path(model_dir, m)]
+    if not models_with_files:
+        return None
+
+    scored_models = []
+    for model_name in models_with_files:
+        score = metrics.get(model_name, {}).get('test_r2')
+        if score is not None:
+            scored_models.append((float(score), model_name))
+
+    if scored_models:
+        scored_models.sort(key=lambda item: item[0], reverse=True)
+        return scored_models[0][1]
+
+    if default_model in models_with_files:
+        return default_model
+
+    return models_with_files[0]
+
 def main():
     if len(sys.argv) < 2:
         print("Error: Expected at least 1 argument", file=sys.stderr)
         sys.exit(1)
 
     model_dir = 'src/main/resources/models'
-    selected_model = 'random_forest'  # Default model
+    selected_model = None
     
     # Check if --model argument is provided
     args = sys.argv[1:]
@@ -66,27 +114,20 @@ def main():
         feature_names = config.get('feature_names', [])
         encoders_list = config.get('encoders', [])
         available_models = config.get('models', ['random_forest'])
-        
-        # Validate selected model
-        if selected_model not in available_models:
+
+        # Manual model selection if provided; otherwise auto-select best model by config metrics.
+        if selected_model is None:
+            selected_model = select_best_model(config, model_dir)
+            if selected_model is None:
+                print("Error: No trained model files are available.", file=sys.stderr)
+                sys.exit(1)
+        elif selected_model not in available_models:
             print(f"Error: Invalid model '{selected_model}'. Available models: {available_models}", file=sys.stderr)
             sys.exit(1)
-        
-        # Load the selected model
-        model_files = {
-            'random_forest': 'insurance_model.pkl',
-            'decision_tree': 'insurance_model_decision_tree.pkl',
-            'linear_regression': 'insurance_model_linear_regression.pkl'
-        }
-        
-        model_file = model_files.get(selected_model)
-        if not model_file:
-            print(f"Error: Model file not found for '{selected_model}'", file=sys.stderr)
-            sys.exit(1)
-        
-        model_path = os.path.join(model_dir, model_file)
-        if not os.path.exists(model_path):
-            print(f"Error: Model file '{model_path}' does not exist. Train the model first.", file=sys.stderr)
+
+        model_path = resolve_model_path(model_dir, selected_model)
+        if not model_path:
+            print(f"Error: Model file for '{selected_model}' does not exist. Train the model first.", file=sys.stderr)
             sys.exit(1)
         
         model = joblib.load(model_path)
@@ -172,8 +213,18 @@ def main():
                         encoded_value = encoders[col_name].transform([str(value).lower()])[0]
                         features.append(encoded_value)
                     except ValueError as ve:
-                        print(f"Error: Unknown value '{value}' for field '{col_name}'. Valid values: {list(encoders[col_name].classes_)}", file=sys.stderr)
-                        sys.exit(1)
+                        classes = list(encoders[col_name].classes_)
+                        if not classes:
+                            print(f"Error: Encoder for '{col_name}' has no classes", file=sys.stderr)
+                            sys.exit(1)
+                        fallback_value = classes[0]
+                        print(
+                            f"Warning: Unknown value '{value}' for field '{col_name}'. "
+                            f"Using fallback '{fallback_value}' from classes {classes}",
+                            file=sys.stderr,
+                        )
+                        encoded_value = encoders[col_name].transform([fallback_value])[0]
+                        features.append(encoded_value)
             else:
                 # Numeric feature
                 value = None

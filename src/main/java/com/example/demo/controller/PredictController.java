@@ -10,6 +10,9 @@ import java.util.Map;
 import com.example.demo.service.UserService;
 import com.example.demo.entity.pastPredictions;
 import com.example.demo.repository.PastPredictionsRepository;
+import com.example.demo.repository.HealthProfileRepository;
+import com.example.demo.entity.HealthProfile;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api")
@@ -18,11 +21,13 @@ public class PredictController {
     private final MLPredictionService mlPredictionService;
     private final UserService userService;
     private final PastPredictionsRepository pastPredictionsRepository;
+    private final HealthProfileRepository healthProfileRepository;
 
-    public PredictController(MLPredictionService mlPredictionService, UserService userService, PastPredictionsRepository pastPredictionsRepository) {
+    public PredictController(MLPredictionService mlPredictionService, UserService userService, PastPredictionsRepository pastPredictionsRepository, HealthProfileRepository healthProfileRepository) {
         this.mlPredictionService = mlPredictionService;
         this.userService = userService;
         this.pastPredictionsRepository = pastPredictionsRepository;
+        this.healthProfileRepository = healthProfileRepository;
     }
 
     @PostMapping(value = "/predict", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -36,8 +41,8 @@ public class PredictController {
         if (req.getGender() == null || req.getGender().trim().isEmpty()) {
             return new InsuranceResponse("Error: Gender is required", null, null);
         }
-        if (req.getLocation() == null || req.getLocation().trim().isEmpty()) {
-            return new InsuranceResponse("Error: Location is required", null, null);
+        if ((req.getLocation() == null || req.getLocation().trim().isEmpty()) && (req.getState() == null || req.getState().trim().isEmpty())) {
+            return new InsuranceResponse("Error: State is required", null, null);
         }
         if (req.getKids() == null || req.getKids() < 0 || req.getKids() > 10) {
             return new InsuranceResponse("Error: Number of kids must be between 0 and 10", null, null);
@@ -47,13 +52,14 @@ public class PredictController {
         Long userId=userService.findByUsername(username).get().getId();
 
         // Validate new fields with defaults
-        String income = (req.getIncome() != null && !req.getIncome().trim().isEmpty()) ? req.getIncome() : "medium";
+        String income = resolveIncomeBucket(req);
         String employment = (req.getEmployment() != null && !req.getEmployment().trim().isEmpty()) ? req.getEmployment() : "employed";
-        Integer healthScore = (req.getHealthScore() != null) ? req.getHealthScore() : 7;
+        Integer healthScore = resolveHealthScoreFromProfile(userId, req.getHealthScore());
         Integer exerciseFrequency = (req.getExerciseFrequency() != null) ? req.getExerciseFrequency() : 3;
         String education = (req.getEducation() != null && !req.getEducation().trim().isEmpty()) ? req.getEducation() : "bachelor";
         String maritalStatus = (req.getMaritalStatus() != null && !req.getMaritalStatus().trim().isEmpty()) ? req.getMaritalStatus() : "single";
         Integer yearsInsured = (req.getYearsInsured() != null) ? req.getYearsInsured() : 0;
+        String region = resolveRegion(req.getState(), req.getLocation());
 
         // Validate ranges
         if (healthScore < 1 || healthScore > 10) {
@@ -88,15 +94,12 @@ public class PredictController {
         }
 
         String[] validLocations = {"northeast", "southeast", "southwest", "northwest"};
-        if (!java.util.Arrays.asList(validLocations).contains(req.getLocation().toLowerCase())) {
-            return new InsuranceResponse("Error: Location must be one of: northeast, southeast, southwest, northwest", null, null);
+        if (!java.util.Arrays.asList(validLocations).contains(region.toLowerCase())) {
+            return new InsuranceResponse("Error: Could not map selected state/location to a valid region", null, null);
         }
 
-        // Get ML model prediction with selected model
-        String selectedModel = req.getModel();
-        if (selectedModel == null || selectedModel.trim().isEmpty()) {
-            selectedModel = "random_forest"; // Default model
-        }
+        // Leave model null so Python selects the best available trained model automatically.
+        String selectedModel = null;
         
         Map<String, Object> predictionResult = mlPredictionService.predictInsuranceCost(
                 req.getAge(),
@@ -104,7 +107,7 @@ public class PredictController {
                 req.getBmi(),
                 req.getKids(),
                 req.getSmoker() != null ? req.getSmoker() : false,
-                req.getLocation(),
+                region,
                 income,
                 employment,
                 healthScore,
@@ -130,14 +133,15 @@ public class PredictController {
         // response.append(String.format("Model Used: %s\n", usedModel.replace("_", " ").toUpperCase()));
         // response.append(String.format("Estimated Annual Cost: $%.2f\n\n", predictedCost));
         
-        tempResponse.append("===Total Estimated Annual Cost===\n");
-        tempResponse.append(String.format("Estimated Annual Cost: $%.2f\n\n", predictedCost));
+        tempResponse.append("===Total Estimated Annual Cost (INR)===\n");
+        tempResponse.append(String.format("Estimated Annual Cost: INR %.2f\n\n", predictedCost));
 
         // response.append("=== Your Profile ===\n");
         StringBuilder profileBuilder=new StringBuilder();
         profileBuilder.append(String.format("Age: %d | BMI: %.1f | Gender: %s\n", req.getAge(), req.getBmi(), req.getGender()));
-        response.append(String.format("Smoker: %s | Children: %d | Location: %s\n", 
-            (req.getSmoker() != null && req.getSmoker()) ? "Yes" : "No", req.getKids(), req.getLocation()));
+        profileBuilder.append(String.format("Smoker: %s | Children: %d | State: %s | Region: %s\n",
+            (req.getSmoker() != null && req.getSmoker()) ? "Yes" : "No", req.getKids(),
+            req.getState() != null ? req.getState() : "NA", region));
         profileBuilder.append(String.format("Income: %s | Employment: %s\n", income, employment));
         profileBuilder.append(String.format("Health Score: %d/10 | Exercise: %d days/week | Education: %s\n", 
             healthScore, exerciseFrequency, education));
@@ -191,5 +195,74 @@ public class PredictController {
         }
 
         return new InsuranceResponse(tempResponse.toString(), predictedCost, usedModel);
+    }
+
+    private String resolveIncomeBucket(InsuranceRequest req) {
+        if (req.getAnnualIncome() != null && req.getAnnualIncome() > 0) {
+            double annualIncome = req.getAnnualIncome();
+            if (annualIncome < 300000) {
+                return "low";
+            }
+            if (annualIncome < 1000000) {
+                return "medium";
+            }
+            if (annualIncome < 2500000) {
+                return "high";
+            }
+            return "very_high";
+        }
+        if (req.getIncome() == null || req.getIncome().trim().isEmpty()) {
+            return "medium";
+        }
+        return req.getIncome().trim().toLowerCase(Locale.ROOT);
+    }
+
+    private Integer resolveHealthScoreFromProfile(Long userId, Integer requestHealthScore) {
+        HealthProfile profile = healthProfileRepository.findByUserId(userId).orElse(null);
+        if (profile == null) {
+            return requestHealthScore != null ? requestHealthScore : 7;
+        }
+
+        int score = 10;
+        if (profile.isHasDiabetes()) score -= 1;
+        if (profile.isHasHypertension()) score -= 1;
+        if (profile.isHasAsthma()) score -= 1;
+        if (profile.isHasArthritis()) score -= 1;
+        if (profile.isHasHeartDisease()) score -= 2;
+        if (profile.isHasKidneyDisease()) score -= 2;
+        if (profile.isHasCancer()) score -= 2;
+        if (profile.getOtherConditions() != null && !profile.getOtherConditions().trim().isEmpty()) score -= 1;
+
+        return Math.max(1, Math.min(10, score));
+    }
+
+    private String resolveRegion(String state, String location) {
+        if (state != null && !state.trim().isEmpty()) {
+            String normalized = state.trim().toLowerCase(Locale.ROOT);
+
+            if (normalized.matches("delhi|haryana|punjab|himachal pradesh|uttarakhand|uttar pradesh|jammu and kashmir|ladakh|chandigarh|rajasthan")) {
+                return "northwest";
+            }
+            if (normalized.matches("bihar|jharkhand|west bengal|odisha|sikkim|assam|arunachal pradesh|meghalaya|tripura|mizoram|manipur|nagaland")) {
+                return "northeast";
+            }
+            if (normalized.matches("maharashtra|goa|gujarat|madhya pradesh|chhattisgarh|dadra and nagar haveli and daman and diu")) {
+                return "southwest";
+            }
+            if (normalized.matches("karnataka|kerala|tamil nadu|andhra pradesh|telangana|puducherry|andaman and nicobar islands|lakshadweep")) {
+                return "southeast";
+            }
+        }
+
+        if (location != null && !location.trim().isEmpty()) {
+            String normalizedLocation = location.trim().toLowerCase(Locale.ROOT);
+            if (normalizedLocation.equals("north")) return "northwest";
+            if (normalizedLocation.equals("east")) return "northeast";
+            if (normalizedLocation.equals("west")) return "southwest";
+            if (normalizedLocation.equals("south")) return "southeast";
+            return normalizedLocation;
+        }
+
+        return "southeast";
     }
 }

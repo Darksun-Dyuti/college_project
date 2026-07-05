@@ -10,6 +10,8 @@ public class InsuranceRequest {
     private Double bmi;
     private String existingCondition;
     private String model; // Model selection: random_forest, decision_tree, linear_regression
+    private Double annualIncome;
+    private String state;
     
     // New features
     private String income;  // low, medium, high, very_high
@@ -49,6 +51,12 @@ public class InsuranceRequest {
 
     public String getModel() { return model; }
     public void setModel(String model) { this.model = model; }
+
+    public Double getAnnualIncome() { return annualIncome; }
+    public void setAnnualIncome(Double annualIncome) { this.annualIncome = annualIncome; }
+
+    public String getState() { return state; }
+    public void setState(String state) { this.state = state; }
 
     public String getIncome() { return income; }
     public void setIncome(String income) { this.income = income; }
