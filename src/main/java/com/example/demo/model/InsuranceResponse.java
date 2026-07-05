@@ -3,17 +3,18 @@ package com.example.demo.model;
 public class InsuranceResponse {
     private String message;
     private Double prediction;
-    private String model;
 
     public InsuranceResponse() {}
 
-    public InsuranceResponse(String message, Double prediction, String model) {
+    public InsuranceResponse(String message, Double prediction) {
         this.message = message;
         this.prediction = prediction;
-        this.model = model;
     }
     public InsuranceResponse(String message) {
         this.message = message;
+    }
+    public InsuranceResponse(Double prediction){
+        this.prediction = prediction;
     }
 
     public String getMessage() { return message; }
@@ -21,7 +22,4 @@ public class InsuranceResponse {
 
     public Double getPrediction() { return prediction; }
     public void setPrediction(Double prediction) { this.prediction = prediction; }
-
-    public String getModel() { return model; }
-    public void setModel(String model) { this.model = model; }
 }

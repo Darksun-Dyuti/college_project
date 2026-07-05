@@ -33,19 +33,19 @@ public class PredictController {
     @PostMapping(value = "/predict", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public InsuranceResponse predict(@RequestBody InsuranceRequest req,Authentication authentication) {
         if (req.getAge() == null || req.getAge() <= 0 || req.getAge() > 120) {
-            return new InsuranceResponse("Error: Age must be between 1 and 120", null, null);
+            return new InsuranceResponse("Error: Age must be between 1 and 120", null);
         }
         if (req.getBmi() == null || req.getBmi() <= 0 || req.getBmi() > 80) {
-            return new InsuranceResponse("Error: BMI must be between 1 and 80", null, null);
+            return new InsuranceResponse("Error: BMI must be between 1 and 80", null);
         }
         if (req.getGender() == null || req.getGender().trim().isEmpty()) {
-            return new InsuranceResponse("Error: Gender is required", null, null);
+            return new InsuranceResponse("Error: Gender is required", null);
         }
         if ((req.getLocation() == null || req.getLocation().trim().isEmpty()) && (req.getState() == null || req.getState().trim().isEmpty())) {
-            return new InsuranceResponse("Error: State is required", null, null);
+            return new InsuranceResponse("Error: State is required", null);
         }
         if (req.getKids() == null || req.getKids() < 0 || req.getKids() > 10) {
-            return new InsuranceResponse("Error: Number of kids must be between 0 and 10", null, null);
+            return new InsuranceResponse("Error: Number of kids must be between 0 and 10", null);
         }
     
         String username=authentication.getName();
@@ -63,39 +63,39 @@ public class PredictController {
 
         // Validate ranges
         if (healthScore < 1 || healthScore > 10) {
-            return new InsuranceResponse("Error: Health score must be between 1 and 10", null, null);
+            return new InsuranceResponse("Error: Health score must be between 1 and 10", null);
         }
         if (exerciseFrequency < 0 || exerciseFrequency > 7) {
-            return new InsuranceResponse("Error: Exercise frequency must be between 0 and 7 days per week", null, null);
+            return new InsuranceResponse("Error: Exercise frequency must be between 0 and 7 days per week", null);
         }
         if (yearsInsured < 0 || yearsInsured > 50) {
-            return new InsuranceResponse("Error: Years insured must be between 0 and 50", null, null);
+            return new InsuranceResponse("Error: Years insured must be between 0 and 50", null);
         }
 
         // Validate enum-like values
         String[] validIncomes = {"low", "medium", "high", "very_high"};
         if (!java.util.Arrays.asList(validIncomes).contains(income.toLowerCase())) {
-            return new InsuranceResponse("Error: Income must be one of: low, medium, high, very_high", null, null); 
+            return new InsuranceResponse("Error: Income must be one of: low, medium, high, very_high", null); 
         }
 
         String[] validEmployments = {"employed", "self_employed", "unemployed", "retired"};
         if (!java.util.Arrays.asList(validEmployments).contains(employment.toLowerCase())) {
-            return new InsuranceResponse("Error: Employment must be one of: employed, self_employed, unemployed, retired", null, null);
+            return new InsuranceResponse("Error: Employment must be one of: employed, self_employed, unemployed, retired", null);
         }
 
         String[] validEducations = {"high_school", "bachelor", "master", "phd"};
         if (!java.util.Arrays.asList(validEducations).contains(education.toLowerCase())) {
-            return new InsuranceResponse("Error: Education must be one of: high_school, bachelor, master, phd", null, null);
+            return new InsuranceResponse("Error: Education must be one of: high_school, bachelor, master, phd", null);
         }
 
         String[] validMarital = {"single", "married", "divorced", "widowed"};
         if (!java.util.Arrays.asList(validMarital).contains(maritalStatus.toLowerCase())) {
-            return new InsuranceResponse("Error: Marital status must be one of: single, married, divorced, widowed", null, null);
+            return new InsuranceResponse("Error: Marital status must be one of: single, married, divorced, widowed", null);
         }
 
         String[] validLocations = {"northeast", "southeast", "southwest", "northwest"};
         if (!java.util.Arrays.asList(validLocations).contains(region.toLowerCase())) {
-            return new InsuranceResponse("Error: Could not map selected state/location to a valid region", null, null);
+            return new InsuranceResponse("Error: Could not map selected state/location to a valid region", null);
         }
 
         // Leave model null so Python selects the best available trained model automatically.
@@ -128,13 +128,13 @@ public class PredictController {
         pastPredictions pastpredictions=new pastPredictions();
         // response.append("=== Insurance Cost Estimate ===\n");
         
-        tempResponse.append("=== Insurance Cost Estimate ===\n");
+        // tempResponse.append("=== Insurance Cost Estimate ===\n");
         
         // response.append(String.format("Model Used: %s\n", usedModel.replace("_", " ").toUpperCase()));
         // response.append(String.format("Estimated Annual Cost: $%.2f\n\n", predictedCost));
         
-        tempResponse.append("===Total Estimated Annual Cost (INR)===\n");
-        tempResponse.append(String.format("Estimated Annual Cost: INR %.2f\n\n", predictedCost));
+        // tempResponse.append("===Total Estimated Annual Cost (INR)===\n");
+        // tempResponse.append(String.format("Estimated Annual Cost: INR %.2f\n\n", predictedCost));
 
         // response.append("=== Your Profile ===\n");
         StringBuilder profileBuilder=new StringBuilder();
@@ -194,7 +194,7 @@ public class PredictController {
             response.append("\nNote: Your existing condition(s) may impact the final premium. Please consult with an insurance agent for detailed information.\n");
         }
 
-        return new InsuranceResponse(tempResponse.toString(), predictedCost, usedModel);
+        return new InsuranceResponse(predictedCost);
     }
 
     private String resolveIncomeBucket(InsuranceRequest req) {

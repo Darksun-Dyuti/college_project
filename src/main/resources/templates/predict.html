@@ -379,8 +379,7 @@
                         <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 20px; color: #155724;">
                             <h3>Prediction Result</h3>
                             <p><strong>Estimated Annual Cost:</strong> INR ${parseFloat(result.prediction).toLocaleString('en-IN', {maximumFractionDigits: 2})}</p>
-                            <p><strong>Model Used:</strong> ${result.model || 'Auto-selected'}</p>
-                            <p>${result.message || ''}</p>
+                            
                         </div>
                     `;
                 } else {
