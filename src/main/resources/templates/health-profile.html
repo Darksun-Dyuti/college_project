@@ -251,7 +251,7 @@
 
     <div class="container">
         <div class="page-header">
-            <h1>❤️ Your Health Profile</h1>
+            <h1>Your Health Profile</h1>
             <p>Add your health conditions to receive personalized doctor and hospital recommendations</p>
         </div>
 
@@ -260,13 +260,13 @@
 
         <div class="form-container">
             <div class="info-text">
-                <strong>ℹ️ Info:</strong> Your health information helps us recommend the best hospitals and doctors for your specific conditions.
+                <strong>Info:</strong> Your health information helps us recommend the best hospitals and doctors for your specific conditions.
             </div>
 
             <form th:action="@{/dashboard/health/update}" method="post" th:object="${healthProfile}">
                 <!-- Health Conditions Section -->
                 <div class="form-section">
-                    <h3>🏥 Existing Health Conditions</h3>
+                    <h3>Existing Health Conditions</h3>
                     <p style="color: #666; margin-bottom: 15px;">Select any conditions you currently have:</p>
                     
                     <div class="checkbox-group">
@@ -316,7 +316,7 @@
 
                 <!-- Other Conditions Section -->
                 <div class="form-section">
-                    <h3>📝 Other Conditions</h3>
+                    <h3>Other Conditions</h3>
                     <div class="form-group">
                         <label for="otherConditions">Please list any other health conditions or allergies:</label>
                         <textarea id="otherConditions" name="otherConditions" 

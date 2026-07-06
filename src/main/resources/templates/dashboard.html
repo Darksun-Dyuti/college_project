@@ -236,25 +236,25 @@
             </div>
 
             <div class="card">
-                <h3>🎯 Make Prediction</h3>
+                <h3> Make Prediction</h3>
                 <p>Use our ML model to predict insurance costs based on customer data</p>
                 <a href="/predict" class="card-button">Start Prediction</a>
             </div>
 
             <div class="card">
-                <h3>📊 View History</h3>
+                <h3> View History</h3>
                 <p>Review your past predictions and analysis</p>
                 <a href="/dashboard/history" class="card-button">View History</a>
             </div>
 
             <div class="card" sec:authorize="hasRole('ADMIN')">
-                <h3>⚙️ Model Management</h3>
+                <h3> Model Management</h3>
                 <p>Train and manage machine learning models (Admin Only)</p>
                 <a href="/api/model" class="card-button">Manage Models</a>
             </div>
 
             <div class="card">
-                <h3>❤️ Health Profile</h3>
+                <h3>Health Profile</h3>
                 <p>Add your health conditions to receive personalized recommendations</p>
                 <a href="/dashboard/health" class="card-button">Manage Health Profile</a>
             </div>
@@ -264,7 +264,7 @@
 
         <div class="recommendations-section" th:if="${hasConditions}">
             <div th:if="${!recommendedHospitals.isEmpty()}">
-                <h2 class="section-title">🏥 Recommended Hospitals</h2>
+                <h2 class="section-title"> Recommended Hospitals</h2>
                 <div class="recommendations-grid">
                     <div th:each="hospital : ${recommendedHospitals}" class="recommendation-card">
                         <h4 th:text="${hospital.name}"></h4>
@@ -296,7 +296,7 @@
             </div>
 
             <div th:if="${!recommendedDoctors.isEmpty()}">
-                <h2 class="section-title">👨‍⚕️ Recommended Doctors</h2>
+                <h2 class="section-title"> Recommended Doctors</h2>
                 <div class="recommendations-grid">
                     <div th:each="doctor : ${recommendedDoctors}" class="recommendation-card">
                         <h4 th:text="${doctor.fullName}"></h4>
