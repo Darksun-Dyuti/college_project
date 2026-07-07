@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Settings - Cost Prediction System')}"></head>
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container animate-fade-in" style="max-width: 900px; padding-top: 3rem; padding-bottom: 5rem; flex: 1;">
+        
+        <nav aria-label="breadcrumb" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                <a th:href="@{/dashboard}" style="color: var(--text-secondary); text-decoration: none; transition: color 0.2s;">Dashboard</a>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <span style="color: var(--text-primary); font-weight: 500;">Settings</span>
+            </div>
+        </nav>
+
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem;">
+            <h1 style="font-size: 2rem; color: var(--text-primary); margin: 0;">Profile Settings</h1>
+            <p style="color: var(--text-secondary); margin: 0;">Manage your account preferences, security, and profile details.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+            
+            <!-- PROFILE INFORMATION -->
+            <div class="card" style="padding: 2rem;">
+                <h2 style="font-size: 1.25rem; color: var(--text-primary); margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">Profile Information</h2>
+                
+                <form action="#" onsubmit="event.preventDefault(); alert('Profile update functionality will be implemented soon.');">
+                    <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 600;">
+                            <span th:text="${#strings.substring(username, 0, 1)}">U</span>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="button" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">Upload Avatar</button>
+                            <button type="button" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);">Remove</button>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="fullName">Full Name</label>
+                            <input type="text" id="fullName" class="form-control" placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="username">Username</label>
+                            <input type="text" id="username" class="form-control" th:value="${username}" disabled style="opacity: 0.7; cursor: not-allowed;">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="email">Email Address</label>
+                            <input type="email" id="email" class="form-control" th:value="${email}" placeholder="Enter your email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="phone">Phone Number <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: normal;">(Optional)</span></label>
+                            <input type="tel" id="phone" class="form-control" placeholder="e.g. +1 234 567 8900">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label class="form-label" for="bio">Short Bio <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: normal;">(Optional)</span></label>
+                        <textarea id="bio" class="form-control" rows="3" placeholder="Write a short bio about yourself"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="reset" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ACCOUNT PREFERENCES -->
+            <div class="card" style="padding: 2rem;">
+                <h2 style="font-size: 1.25rem; color: var(--text-primary); margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">Account Preferences</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="themeSelect">Theme Preference</label>
+                        <select id="themeSelect" class="form-control">
+                            <option value="system">System Default</option>
+                            <option value="light">Light Mode</option>
+                            <option value="dark">Dark Mode</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="languageSelect">Preferred Language</label>
+                        <select id="languageSelect" class="form-control">
+                            <option value="en">English (US)</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                    <input type="checkbox" id="emailNotif" checked style="accent-color: var(--primary-color); width: 1.2rem; height: 1.2rem;">
+                    <label for="emailNotif" style="margin: 0; color: var(--text-primary); cursor: pointer;">Receive email notifications for prediction results</label>
+                </div>
+            </div>
+
+            <!-- ACCOUNT SECURITY -->
+            <div class="card" style="padding: 2rem;">
+                <h2 style="font-size: 1.25rem; color: var(--text-primary); margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">Account Security</h2>
+                
+                <form action="#" onsubmit="event.preventDefault(); alert('Password change will be implemented soon.');">
+                    <div class="form-group" style="max-width: 400px; margin-bottom: 1.5rem;">
+                        <label class="form-label" for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" class="form-control" placeholder="Enter current password" required>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="confirmPassword">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm new password" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                </form>
+            </div>
+
+            <!-- ACCOUNT INFORMATION -->
+            <div class="card" style="padding: 2rem;">
+                <h2 style="font-size: 1.25rem; color: var(--text-primary); margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">Account Information</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Account Status</div>
+                        <div style="color: #10b981; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></div>
+                            Active
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Role</div>
+                        <div style="color: var(--text-primary); font-weight: 500;">Standard User</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Joined</div>
+                        <div style="color: var(--text-primary); font-weight: 500;">March 2026</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DANGER ZONE -->
+            <div class="card" style="padding: 2rem; border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.02);">
+                <h2 style="font-size: 1.25rem; color: var(--danger); margin-top: 0; margin-bottom: 1rem;">Danger Zone</h2>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0; margin-bottom: 1.5rem;">
+                    Deleting your account is permanent. All your prediction history, health profile data, and settings will be completely wiped from our servers. This action cannot be undone.
+                </p>
+                <button type="button" class="btn" style="background: var(--danger); color: white; border: none;" onclick="if(confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) alert('Account deletion will be implemented soon.');">
+                    Delete Account
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script>
+        // Connect Theme Select to the global theme.js functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSelect = document.getElementById('themeSelect');
+            if(themeSelect) {
+                // Set initial value based on HTML attribute
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                themeSelect.value = currentTheme || 'system';
+                
+                themeSelect.addEventListener('change', (e) => {
+                    const themeToggleBtn = document.getElementById('theme-toggle');
+                    if(e.target.value !== 'system' && themeToggleBtn) {
+                        // Force the global theme to update by manipulating the DOM directly
+                        document.documentElement.setAttribute('data-theme', e.target.value);
+                        localStorage.setItem('theme', e.target.value);
+                        
+                        // We also need to update the icon in navbar
+                        const themeIcon = document.getElementById('theme-icon');
+                        if (themeIcon) {
+                            if (e.target.value === 'dark') {
+                                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />';
+                            } else {
+                                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />';
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <footer th:fragment="footer"
+        style="background: var(--bg-card); border-top: 1px solid var(--border-color); padding: 2.5rem 0; margin-top: auto;">
+        <div class="container"
+            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center;">
+
+            <div
+                style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); font-weight: 600; font-size: 1.1rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="var(--primary-color)"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+                Medical Insurance Cost Predictor
+            </div>
+
+            <p style="color: var(--text-secondary); font-size: 0.9rem; max-width: 500px; margin: 0;">
+                A Final Year Engineering Project utilizing machine learning to accurately predict healthcare insurance
+                costs based on lifestyle and demographic metrics.
+            </p>
+
+            <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem; flex-wrap: wrap; justify-content: center;">
+                <a href="https://github.com/Darksun-Dyuti/college_project"
+                    style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;"
+                    onmouseover="this.style.color='var(--primary-color)'"
+                    onmouseout="this.style.color='var(--text-muted)'">Documentation</a>
+                <a href="https://github.com/Darksun-Dyuti/college_project"
+                    style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;"
+                    onmouseover="this.style.color='var(--primary-color)'"
+                    onmouseout="this.style.color='var(--text-muted)'">Architecture</a>
+                <a href="https://github.com/Darksun-Dyuti/college_project"
+                    style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;"
+                    onmouseover="this.style.color='var(--primary-color)'"
+                    onmouseout="this.style.color='var(--text-muted)'">Source Code</a>
+            </div>
+
+            <div
+                style="color: var(--text-muted); font-size: 0.8rem; margin-top: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); width: 100%; max-width: 600px;">
+                &copy; 2026 Medical Insurance Cost Predictor. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

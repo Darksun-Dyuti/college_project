@@ -114,6 +114,18 @@ public class DashboardController {
         return "recommendations";
     }
 
+    @GetMapping("/settings")
+    public String settings(Model model) {
+        User user = getCurrentUser();
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        model.addAttribute("username", user.getUsername());
+        model.addAttribute("email", "user@example.com"); // Placeholder as User entity might not have email field yet
+        return "settings";
+    }
+
     @GetMapping("/history")
     public String predictionHistory(Model model,Authentication authentication) {
         User user=userService.findByUsername(authentication.getName()).get();
