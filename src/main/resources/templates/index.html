@@ -1,332 +1,83 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Medical Insurance Cost Estimator</title>
-
-<style>
-  body {
-    margin: 0;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 18px;              /* +2 font size */
-    font-weight: 600;             /* semi-bold */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #eaeaea;
-  }
-
-  .card {
-    width: 720px;
-    background: #0b1f2a;
-    border-radius: 14px;
-    padding: 2rem 2.5rem;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
-  }
-
-  .card h2 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: #4fa3ff;
-    letter-spacing: 0.6px;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.1rem;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .field label {
-    font-size: 0.95rem;
-    margin-bottom: 0.35rem;
-    color: #b8d8ff;
-  }
-
-  .field input,
-  .field select,
-  .field textarea {
-    background: #122b3a;
-    border: 1px solid #264e6d;
-    border-radius: 8px;
-    padding: 0.7rem 0.8rem;
-    color: #ffffff;
-    font-size: 1rem;
-    font-weight: 600;
-    outline: none;
-  }
-
-  .field input:focus,
-  .field select:focus,
-  .field textarea:focus {
-    border-color: #4fa3ff;
-    box-shadow: 0 0 0 2px rgba(79,163,255,0.25);
-  }
-
-  textarea {
-    resize: vertical;
-    min-height: 95px;
-  }
-
-  .radio-row {
-    display: flex;
-    gap: 1.8rem;
-    margin-top: 0.4rem;
-  }
-
-  .radio-row label {
-    font-size: 1rem;
-    color: #eaeaea;
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    cursor: pointer;
-  }
-
-  /* Center aligned button */
-  .action-row {
-    display: flex;
-    justify-content: center;
-    margin-top: 1.6rem;
-  }
-
-  .action-row button {
-    width: 40%;
-    background: linear-gradient(135deg, #4fa3ff, #1c6ed5);
-    border: none;
-    border-radius: 12px;
-    padding: 0.9rem;
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #fff;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .action-row button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(79,163,255,0.45);
-  }
-
-  .result-box {
-    margin-top: 1.7rem;
-    background: #081821;
-    border: 1px solid #1f3f57;
-    border-radius: 10px;
-    padding: 1.1rem;
-    font-size: 0.95rem;
-    white-space: pre-wrap;
-    color: #d6eaff;
-  }
-
-  .result-title {
-    color: #4fa3ff;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-  }
-</style>
-</head>
-
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Medical Insurance Cost Estimator')}"></head>
 <body>
 
-<div class="card">
-  <h2>Medical Insurance Cost Estimator</h2>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-  <form id="insuranceForm" class="form-grid">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 4rem 1.5rem;">
+        
+        <!-- Subtle Animated Background Elements -->
+        <div style="position: absolute; width: 100%; height: 100%; z-index: -1; overflow: hidden; top: 0; left: 0;">
+            <div style="position: absolute; top: -20%; left: -10%; width: 50%; height: 50%; background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%); filter: blur(60px); opacity: 0.6; animation: float 15s infinite alternate;"></div>
+            <div style="position: absolute; bottom: -20%; right: -10%; width: 50%; height: 50%; background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%); filter: blur(60px); opacity: 0.6; animation: float 20s infinite alternate-reverse;"></div>
+        </div>
 
-    <div class="field">
-      <label>Name</label>
-      <input type="text" id="name">
+        <div class="animate-fade-in" style="max-width: 800px; text-align: center; z-index: 1;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bg-input); padding: 0.5rem 1rem; border-radius: 99px; margin-bottom: 2rem; border: 1px solid var(--border-color); color: var(--primary-color); font-weight: 600; font-size: 0.9rem;">
+                <span style="position: relative; display: flex; width: 10px; height: 10px;">
+                    <span style="animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: var(--primary-color); opacity: 0.75;"></span>
+                    <span style="position: relative; display: inline-flex; border-radius: 50%; height: 10px; width: 10px; background-color: var(--primary-color);"></span>
+                </span>
+                Powered by Machine Learning
+            </div>
+            
+            <h1 style="font-size: 3.5rem; letter-spacing: -0.025em; margin-bottom: 1.5rem; line-height: 1.1; background: linear-gradient(to right, var(--text-primary), var(--text-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Predict Medical Insurance Costs with Precision
+            </h1>
+            
+            <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                An advanced predictive model leveraging personal health and lifestyle data to provide highly accurate insurance premium estimates. Built for research and analysis.
+            </p>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="/predict" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                    Get Estimate Now
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+                <a href="/login" class="btn btn-secondary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                    Access Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="animate-fade-in animate-delay-2" style="margin-top: 5rem; width: 100%; max-width: 1000px; z-index: 1;">
+            <div class="card" style="display: flex; flex-direction: column; align-items: center; text-align: center; background: linear-gradient(180deg, var(--bg-card) 0%, transparent 100%); border-bottom: none;">
+                <h3 style="color: var(--text-secondary); font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2rem;">Key Features</h3>
+                <div class="grid-cols-3" style="width: 100%; text-align: left;">
+                    <div style="padding: 1.5rem;">
+                        <div style="background: rgba(59, 130, 246, 0.1); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; color: var(--primary-color);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <h4 style="margin-bottom: 0.5rem;">Cost Estimation</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Accurate predictions using Scikit-Learn models trained on extensive demographic data.</p>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div style="background: rgba(16, 185, 129, 0.1); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; color: var(--success);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        </div>
+                        <h4 style="margin-bottom: 0.5rem;">Health Profiling</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Maintain a secure record of health metrics and historical predictions for analysis.</p>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div style="background: rgba(245, 158, 11, 0.1); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; color: var(--warning);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        </div>
+                        <h4 style="margin-bottom: 0.5rem;">Recommendations</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Get tailored hospital and doctor suggestions based on your personal health conditions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
     </div>
 
-    <div class="field">
-      <label>Age</label>
-      <input type="number" id="age">
-    </div>
+    <style>
+        @keyframes ping {
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
+    </style>
 
-    <div class="field">
-      <label>Gender</label>
-      <select id="gender">
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="other">Other</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Prediction Model</label>
-      <select id="model">
-        <option value="random_forest">Random Forest (Default)</option>
-        <option value="decision_tree">Decision Tree</option>
-        <option value="linear_regression">Linear Regression</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Smoker</label>
-      <div class="radio-row">
-        <label>
-          <input type="radio" name="smoker" value="yes">
-          Yes
-        </label>
-        <label>
-          <input type="radio" name="smoker" value="no" checked>
-          No
-        </label>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Region</label>
-      <select id="location">
-        <option value="northeast">Northeast</option>
-        <option value="southeast">Southeast</option>
-        <option value="southwest">Southwest</option>
-        <option value="northwest">Northwest</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Number of Kids</label>
-      <input type="number" id="kids">
-    </div>
-
-    <div class="field">
-      <label>BMI</label>
-      <input type="number" step="0.1" id="bmi">
-    </div>
-
-    <div class="field">
-      <label>Existing Conditions</label>
-      <textarea id="existingCondition" placeholder="Diabetes, BP, Asthma..."></textarea>
-    </div>
-
-    <!-- New Fields Section -->
-    <hr style="border: 1px solid #264e6d; margin: 1.5rem 0;">
-    <h3 style="color: #4fa3ff; margin: 1rem 0; text-align: center;">Additional Health & Lifestyle Information</h3>
-
-    <div class="field">
-      <label>Income Level</label>
-      <select id="income">
-        <option value="low">Low</option>
-        <option value="medium" selected>Medium</option>
-        <option value="high">High</option>
-        <option value="very_high">Very High</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Employment Status</label>
-      <select id="employment">
-        <option value="employed" selected>Employed</option>
-        <option value="self_employed">Self-Employed</option>
-        <option value="unemployed">Unemployed</option>
-        <option value="retired">Retired</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Health Score (1-10)</label>
-      <input type="number" id="healthScore" min="1" max="10" value="7">
-    </div>
-
-    <div class="field">
-      <label>Exercise Frequency (days per week, 0-7)</label>
-      <input type="number" id="exerciseFrequency" min="0" max="7" value="3">
-    </div>
-
-    <div class="field">
-      <label>Education Level</label>
-      <select id="education">
-        <option value="high_school">High School</option>
-        <option value="bachelor" selected>Bachelor's Degree</option>
-        <option value="master">Master's Degree</option>
-        <option value="phd">PhD</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Marital Status</label>
-      <select id="maritalStatus">
-        <option value="single">Single</option>
-        <option value="married" selected>Married</option>
-        <option value="divorced">Divorced</option>
-        <option value="widowed">Widowed</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Years Insured (0-50)</label>
-      <input type="number" id="yearsInsured" min="0" max="50" value="0">
-    </div>
-
-    <div class="action-row">
-      <button type="button" id="send">Get Estimate</button>
-    </div>
-
-  </form>
-
-  <div class="result-box">
-    <div class="result-title">Result</div>
-    <div id="result">(no result yet)</div>
-  </div>
-</div>
-
-<script>
-  document.getElementById('send').addEventListener('click', async () => {
-    const payload = {
-      name: document.getElementById('name').value,
-      age: parseInt(document.getElementById('age').value || '0'),
-      gender: document.getElementById('gender').value,
-      smoker: document.querySelector('input[name="smoker"]:checked').value === 'yes',
-      location: document.getElementById('location').value,
-      kids: parseInt(document.getElementById('kids').value || '0'),
-      bmi: parseFloat(document.getElementById('bmi').value || '0'),
-      existingCondition: document.getElementById('existingCondition').value,
-      model: document.getElementById('model').value,
-      // New fields
-      income: document.getElementById('income').value,
-      employment: document.getElementById('employment').value,
-      healthScore: parseInt(document.getElementById('healthScore').value || '7'),
-      exerciseFrequency: parseInt(document.getElementById('exerciseFrequency').value || '3'),
-      education: document.getElementById('education').value,
-      maritalStatus: document.getElementById('maritalStatus').value,
-      yearsInsured: parseInt(document.getElementById('yearsInsured').value || '0')
-    };
-
-    if (!payload.name || payload.age <= 0 || payload.bmi <= 0) {
-      document.getElementById('result').textContent =
-        'Error: Please provide Name, valid Age, and BMI.';
-      return;
-    }
-
-    document.getElementById('result').textContent = 'Calculating...';
-
-    try {
-      const resp = await fetch('/api/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await resp.json();
-      document.getElementById('result').textContent =
-        data.result || JSON.stringify(data, null, 2);
-
-    } catch (err) {
-      document.getElementById('result').textContent =
-        'Error: ' + err.message;
-    }
-  });
-</script>
-
+    <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

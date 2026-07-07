@@ -258,8 +258,9 @@ def main():
             print("Error: No features provided", file=sys.stderr)
             sys.exit(1)
         
-        features_array = np.array([features])
-        prediction = model.predict(features_array)[0]
+        import pandas as pd
+        features_df = pd.DataFrame([features], columns=feature_names)
+        prediction = model.predict(features_df)[0]
         
         # Output prediction with model name in JSON format for easier parsing
         output = {
